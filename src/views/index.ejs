@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+
+    <h1>LOGIN</h1>
+    <label for="emailInput">Email: </label>
+    <input type="email" id="emailInput">
+    <br>
+    <label for="passwordInput">Password:</label>
+    <input type="password" id="passwordInput">
+    <br>
+    <button onclick="login()">Login</button>
+
+    <script defer src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        function login() {
+            var emailInput = document.getElementById("emailInput");
+            var passwordInput = document.getElementById("passwordInput");
+
+            let email = emailInput.value;
+            let password = passwordInput.value;
+
+            if (!email || !password) {
+                alert("You must fill in the email and password blanks.");
+                return;
+            }
+
+            axios.post("/api/v1/auth/login", {
+                email,
+                password
+            }).then((res) => {
+                alert("You have logged in !");
+            }).catch((error) => {
+                alert("Error: " + error);
+            });
+        }
+    </script>
+</body>
+</html>

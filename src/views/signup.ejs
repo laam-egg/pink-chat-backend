@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign up</title>
+</head>
+<body>
+    <div id="root">
+        <h1>Sign up</h1>
+        <label for="emailInput">Email: </label>
+        <input type="email" id="emailInput">
+        <br>
+        <label for="passwordInput">Password:</label>
+        <input type="password" id="passwordInput">
+        <br>
+        <label for="fullNameInput">Full Name:</label>
+        <input type="text" id="fullNameInput">
+        <br>
+
+        <button onclick="signup()">Sign up</button>
+    </div>
+
+    <script defer src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        function signup() {
+            var emailInput = document.getElementById("emailInput");
+            var passwordInput = document.getElementById("passwordInput");
+            var fullNameInput = document.getElementById("fullNameInput");
+
+            let email = emailInput.value;
+            let password = passwordInput.value;
+            let fullName = fullNameInput.value;
+
+            if (!email || !password || !fullName) {
+                alert("Required fields not fulfilled");
+                return;
+            }
+
+            console.log(email, password, fullName);
+
+            console.log("Processing...");
+            axios.post("/api/v1/user/signup", {
+                email,
+                password,
+                fullName
+            }).then((res) => {
+                console.log("Done.");
+                alert("You have signed up !");
+                window.location.replace("/"); // redirect to homepage
+            }).catch((error) => {
+                alert("Error: " + error);
+            });
+        }
+    </script>
+</body>
+</html>

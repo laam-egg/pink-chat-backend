@@ -1,53 +1,74 @@
-import dotenv from "dotenv";
 import mongoose from "mongoose";
 import express from "express";
 import cors from "cors";
-import http from "http";
+import cookieParser from "cookie-parser";
 import { Server } from "socket.io";
+import path from "path";
 
-import allRoutes from "./api/routes/allRoutes.js";
+import router from "./routes";
+
+import { DEBUG, MONGODB_URL, API_HOST, API_PORT, SOCKET_PORT } from "./env.js";
+
+import createEsmUtils from "esm-utils";
+const { dirname } = createEsmUtils(import.meta);
 
 async function main() {
-  dotenv.config();
-  const PORT = process.env.PORT || 8000;
-  const DEBUG = process.env.DEBUG || false;
-  const DBPATH = process.env.DBPATH;
-  
-  if (DEBUG) {
-    console.log("DEBUG MODE ENABLED");
-  }
-
-  let ERROR_OCCURRED = false;
-
-  if (!ERROR_OCCURRED) {
-    try {
-      await mongoose.connect(DBPATH);
-      console.log("Connection to database established.");
-    } catch (error) {
-      ERROR_OCCURRED = true;
-      console.log("ERROR: Could not connect to database.");
-      if (DEBUG) {
-        console.log("DBPATH =", DBPATH);
-      }
+    if (DEBUG) {
+        console.log("DEBUG MODE ENABLED");
     }
-  }
 
-  if (!ERROR_OCCURRED) {
+    /////////////////
+    // HANDLE CORS //
+    /////////////////
+
+    const corsOptions = {
+        origin: (DEBUG ? "*" : ["127.0.0.1", API_HOST]),
+        optionsSuccessStatus: 200
+    };
+
+    /////////////////////////
+    // CONNECT TO DATABASE //
+    /////////////////////////
+
+    try {
+        await mongoose.connect(MONGODB_URL);
+        console.log("Connection to database established.");
+    } catch (error) {
+        console.log("ERROR: Could not connect to database.");
+        if (DEBUG) {
+        console.log("MONGODB_URL =", MONGODB_URL);
+        }
+        return;
+    }
+
+    ///////////////////////////////
+    // HANDLE SOCKET.IO REQUESTS //
+    ///////////////////////////////
+
+    const io = new Server(SOCKET_PORT, {
+        cors: corsOptions
+    });
+    // TODO
+
+    ///////////////////////////
+    // HANDLE HTTPS REQUESTS //
+    ///////////////////////////
+
     const app = express();
 
-    if (DEBUG) {
-      app.use(cors());
-    }
-  
+    app.use(cors(corsOptions));
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
-  
-    app.use("/", allRoutes);
-  
-    app.listen(PORT, () => {
-      console.log(`Server listening on port ${PORT}`);
+    app.use(cookieParser());
+
+    app.set("views", path.resolve(path.join(dirname, "/views")));
+    app.set("view engine", "ejs");
+
+    app.use(router);
+
+    app.listen(API_PORT, () => {
+        console.log(`Server listening ; API port: ${API_PORT} ; socket port: ${SOCKET_PORT}`);
     });
-  }
-};
+}
 
 await main();
