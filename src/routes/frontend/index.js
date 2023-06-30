@@ -1,14 +1,16 @@
 import { Router } from "express";
 
+import env from "../../env";
+
 const frontendRouter = Router();
 
 frontendRouter.get("/", (req, res) => {
-    res.render("index");
+    res.render("index", env);
 });
 
 frontendRouter.get("/signup", (req, res) => {
-    res.render("signup");
-})
+    res.render("signup", env);
+});
 
 // TODO: Handle 404 in frontend
 // frontendRouter.use("*")

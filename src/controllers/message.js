@@ -1,4 +1,5 @@
 import Message from "../models/Message";
+import { notifyNewMessage, notifyEditMessage, notifyDeleteMessage } from "./socketio";
 
 export async function listMessages(req, res) {
     const { pagination, datetimeBefore } = req.body;
@@ -32,6 +33,8 @@ export async function sendMessage(req, res) {
     const message = await Message.create(messageSpec);
 
     res.status(200).json(message);
+
+    /*await*/ notifyNewMessage(req.user, req.group, message);
 }
 
 export async function editMessage(req, res) {
@@ -55,9 +58,13 @@ export async function editMessage(req, res) {
         { new: true }
     );
     res.status(200).json(message);
+
+    /*await*/ notifyEditMessage(req.user, req.group, message);
 }
 
 export async function deleteMessage(req, res) {
-    await Message.findByIdAndDelete(req.message._id);
+    const messageId = req.message._id;
+    await Message.findByIdAndDelete(messageId);
     res.status(200).json({});
+    /*await*/ notifyDeleteMessage(req.user, req.group, messageId);
 }

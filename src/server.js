@@ -6,11 +6,13 @@ import { Server } from "socket.io";
 import path from "path";
 
 import router from "./routes";
+import { handleSocketioConnection } from "./controllers/socketio";
 
 import { DEBUG, MONGODB_URL, API_HOST, API_PORT, SOCKET_PORT } from "./env.js";
 
 import createEsmUtils from "esm-utils";
 const { dirname } = createEsmUtils(import.meta);
+
 
 async function main() {
     if (DEBUG) {
@@ -48,7 +50,7 @@ async function main() {
     const io = new Server(SOCKET_PORT, {
         cors: corsOptions
     });
-    // TODO
+    io.on("connection", handleSocketioConnection);
 
     ///////////////////////////
     // HANDLE HTTPS REQUESTS //

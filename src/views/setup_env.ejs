@@ -1,0 +1,10 @@
+<%- "<script>" %>
+    <% for (let key of [ "DEBUG", "API_HOST", "API_PORT", "SOCKET_PORT" ]) { %>
+        <% if (typeof eval(key) === "string") { %>
+            <!-- TODO: Escape double quotes in string too. -->
+            <%- `${key} = "${eval(key)}";` %>
+        <% } else { %>
+            <%- `${key} = ${eval(key)};` %>
+        <% } %>
+    <% } %>
+<%- "</script>" %>

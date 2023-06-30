@@ -3,7 +3,8 @@ import HttpException from "../exceptions/HttpException.js";
 import bcrypt from "bcryptjs";
 
 async function hash(password) {
-    return await bcrypt.hash(password, 16);
+    // https://stackoverflow.com/a/67052696/13680015
+    return await bcrypt.hash(password, 10);
 }
 
 export async function listUsers(req, res) {
@@ -16,6 +17,21 @@ export async function listUsers(req, res) {
         })
     };
     res.status(200).json(resBody);
+}
+
+export async function getSelfUserInfo(req, res) {
+    const user = req.user.toObject();
+    delete user.passwordHash;
+    res.status(200).json(user);
+}
+
+export async function getAnotherUserInfo(req, res) {
+    const userId = req.query.id;
+    let user = await User.findById(userId);
+    user = user.toObject();
+    delete user.passwordHash;
+
+    res.status(200).json(user);
 }
 
 export async function createUser(req, res) {
