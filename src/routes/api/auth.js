@@ -7,6 +7,6 @@ const authRouter = Router();
 
 authRouter.post("/login", CA(login));
 
-authRouter.post("/refresh-access-token", CA(refreshAccessToken));
+authRouter.post("/refresh_access_token", CA(refreshAccessToken));
 
 export default authRouter;

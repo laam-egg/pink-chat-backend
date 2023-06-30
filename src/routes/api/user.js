@@ -7,10 +7,10 @@ const userRouter = Router();
 
 userRouter.post("/list", CA(listUsers));
 
-userRouter.post("/sign_up", CA(createUser));
+userRouter.post("/signup", CA(createUser));
 
 userRouter.post("/forgot_password", CA(forgotPassword));
 
-userRouter.post("/delete", CA(userMustHaveLoggedIn), CA(deleteUser));
+userRouter.delete("/delete", CA(userMustHaveLoggedIn), CA(deleteUser));
 
 export default userRouter;

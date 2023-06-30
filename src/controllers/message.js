@@ -5,10 +5,10 @@ export async function listMessages(req, res) {
 
     let query = Message.find({
         groupId: req.group._id,
-        datetime: { $lt: (datetimeBefore ? datetimeBefore : Date.now()) }
+        datetime: { $lt: (datetimeBefore ? new Date(datetimeBefore) : Date.now()) }
     }).sort("-date");
 
-    if (pagination) query = query.limit(10);
+    if (pagination) query = query.limit(pagination);
 
     const resBody = {
         list: await query
@@ -58,6 +58,6 @@ export async function editMessage(req, res) {
 }
 
 export async function deleteMessage(req, res) {
-    await Message.deleteOne({ _id: req.message._id });
+    await Message.findByIdAndDelete(req.message._id);
     res.status(200).json({});
 }

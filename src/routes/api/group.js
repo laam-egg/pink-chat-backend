@@ -15,7 +15,7 @@ groupRouter.post("/list", CA(listGroups));
 
 groupRouter.post("/create", CA(createGroup));
 
-groupRouter.post("/rename", CA(groupMustExist), CA(userMustBeInGroup), CA(renameGroup));
+groupRouter.patch("/rename", CA(groupMustExist), CA(userMustBeInGroup), CA(renameGroup));
 
 groupRouter.delete("/delete", CA(groupMustExist), CA(userMustBeInGroup), CA(deleteGroup));
 

@@ -15,7 +15,7 @@ messageRouter.post("/list", CA(listMessages));
 
 messageRouter.post("/send", CA(validateMessageBody), CA(sendMessage));
 
-messageRouter.post("/edit", CA(userMustHaveSentMessage), CA(validateMessageBody), CA(editMessage));
+messageRouter.patch("/edit", CA(userMustHaveSentMessage), CA(validateMessageBody), CA(editMessage));
 
 messageRouter.delete("/delete", CA(userMustHaveSentMessage), CA(deleteMessage));
 
