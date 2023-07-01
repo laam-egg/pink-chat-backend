@@ -32,6 +32,10 @@ export async function listMyGroups(req, res) {
     res.status(200).json(resBody);
 }
 
+export async function getGroupInfo(req, res) {
+    res.status(200).json(req.group);
+}
+
 export async function createGroup(req, res) {
     const { name, users, themeId } = req.body;
 

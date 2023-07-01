@@ -1,4 +1,4 @@
-import { createGroup, invite, deleteGroup, listAllGroups, listMyGroups, renameGroup } from "../../controllers/group";
+import { createGroup, getGroupInfo, invite, deleteGroup, listAllGroups, listMyGroups, renameGroup } from "../../controllers/group";
 import { Router } from "express";
 import CA from "../../exceptions/catchAsync";
 
@@ -13,6 +13,18 @@ const groupRouter = Router();
 groupRouter.post("/list_all", CA(listAllGroups));
 
 groupRouter.post("/list", CA(userMustHaveLoggedIn), CA(listMyGroups));
+
+groupRouter.get("/info/:id",
+    (req, res, next) => {
+        // embed group ID into req.body so that we can use middleware groupMustExist
+        req.body = {
+            groupId: req.params.id
+        }
+        next();
+    },
+    CA(groupMustExist),
+    CA(getGroupInfo)
+);
 
 groupRouter.post("/create", CA(userMustHaveLoggedIn), CA(createGroup));
 
