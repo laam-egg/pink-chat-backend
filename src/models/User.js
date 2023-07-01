@@ -12,11 +12,15 @@ const UserSchema = new Schema({
     },
     fullName: {
         type: String,
-        required: true
+        required: true,
+        index: true
     },
     blockList: [{ userId: ObjectId }],
     avatar: { mediaId: ObjectId }
 });
+
+// If you want to search whole-word:
+// https://github.com/Automattic/mongoose/issues/7058#issuecomment-425636711
 
 const User = model("User", UserSchema);
 

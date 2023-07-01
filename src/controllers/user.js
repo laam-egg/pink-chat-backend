@@ -1,6 +1,15 @@
 import User from "../models/User.js";
 import HttpException from "../exceptions/HttpException.js";
 import bcrypt from "bcryptjs";
+import escapeStringRegexp from "escape-string-regexp";
+
+function addTextSearchQuery(fieldName, contains, filter) {
+    if (contains) {
+        filter[fieldName] = {
+            $regex: new RegExp(escapeStringRegexp(contains), "i")
+        };
+    }
+}
 
 async function hash(password) {
     // https://stackoverflow.com/a/67052696/13680015
@@ -8,9 +17,10 @@ async function hash(password) {
 }
 
 export async function listUsers(req, res) {
-    // TODO: Create filter
+    const filter = {};
+    addTextSearchQuery("fullName", req.body.fullNameContains, filter);
     let resBody = {
-        list: (await User.find()).map((user) => {
+        list: (await User.find(filter)).map((user) => {
             user = user.toObject();
             delete user.passwordHash;
             return user;

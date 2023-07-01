@@ -20,6 +20,9 @@ dependencies:
   ejs:
     specifier: ^3.1.9
     version: 3.1.9
+  escape-string-regexp:
+    specifier: ^5.0.0
+    version: 5.0.0
   esm-utils:
     specifier: ^4.1.2
     version: 4.1.2
@@ -1911,6 +1914,11 @@ packages:
     resolution: {integrity: sha512-vbRorB5FUQWvla16U8R/qgaFIya2qGzwDrNmCZuYKrbdSUMG6I1ZCGQRefkRVhuOkIGVne7BQ35DSfo1qvJqFg==}
     engines: {node: '>=0.8.0'}
     dev: true
+
+  /escape-string-regexp@5.0.0:
+    resolution: {integrity: sha512-/veY75JbMK4j1yjvuUxuVsiS/hr/4iHs9FTT6cgTexxdE0Ly/glccBAkloH/DofkjRbZU3bnoj38mOmhkZ0lHw==}
+    engines: {node: '>=12'}
+    dev: false
 
   /esm-utils@4.1.2:
     resolution: {integrity: sha512-hYKPzOCkAU11rMIiH6gvvReARaSLiRhJkGWPcwJB/S4zg7em//YKAcRxwZYw4sW5mRmI6lhV59wWWTdWKwOXvQ==}
