@@ -26,7 +26,7 @@ export async function getSelfUserInfo(req, res) {
 }
 
 export async function getAnotherUserInfo(req, res) {
-    const userId = req.query.id;
+    const userId = req.params.id;
     let user = await User.findById(userId);
     user = user.toObject();
     delete user.passwordHash;
@@ -53,6 +53,39 @@ export async function createUser(req, res) {
     delete newUser.passwordHash;
 
     res.status(200).json(newUser);
+}
+
+export async function editUser(req, res) {
+    const newEmail = req.body.email;
+    const newPassword = req.body.password;
+    const newFullName = req.body.fullName;
+
+    const updates = {};
+    
+    if (newEmail && newEmail != req.user.email) {
+        if (await User.findOne({ email: newEmail })) {
+            throw new HttpException(409, "Email already registered");
+        }
+        updates.email = newEmail;
+    }
+
+    if (newPassword) {
+        updates.passwordHash = await hash(newPassword);
+    }
+
+    if (newFullName) {
+        updates.fullName = newFullName;
+    }
+
+    let updatedUser = await User.findByIdAndUpdate(
+        req.user._id,
+        updates,
+        { new: true }
+    );
+    updatedUser = updatedUser.toObject();
+    delete updatedUser.passwordHash;
+
+    res.status(200).json(updatedUser);
 }
 
 export async function forgotPassword(req, res) {

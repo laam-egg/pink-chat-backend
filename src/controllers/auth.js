@@ -5,11 +5,21 @@ import User from "../models/User.js";
 
 import { DEBUG } from "../env.js";
 
+/**
+ * Salt is to be embedded into JWT so that with the same base data, tokens are generated different each time.
+ * For this purpose, salts are also required to be different each time they are acquired.
+ */
+function generateSalt() {
+    return Date.now().toString() + (Math.random() * 19).toString();
+}
+
+
 function generateAccessToken(user, expiresIn = (DEBUG ? "15d" : "1d")) {
     return jwt.sign(
         {
             id: user._id,
-            email: user.email
+            email: user.email,
+            salt: generateSalt()
         },
         process.env.JWT_ACCESS_SECRET,
         {
@@ -22,7 +32,8 @@ function generateRefreshToken(user, expiresIn = "365d") {
     return jwt.sign(
         {
             id: user._id,
-            email: user.email
+            email: user.email,
+            salt: generateSalt()
         },
         process.env.JWT_REFRESH_SECRET,
         {
@@ -48,7 +59,7 @@ export async function login(req, res) {
 
     res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
-        secure: false,
+        secure: true,
         path: "/"
     });
 
