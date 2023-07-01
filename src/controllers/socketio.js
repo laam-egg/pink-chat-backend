@@ -13,6 +13,7 @@ function getKeyByValue(object, value) {
 
 function forEachReceiverSocketIdAndUserId(group, func) {
     for (let memberInfo of group.users) {
+        const receiverUserId = memberInfo.userId;
         const receiverSocketId = getKeyByValue(socketIdAndUserIdMap, receiverUserId);
         func(receiverSocketId, memberInfo.userId, memberInfo.isAdmin);
     }
