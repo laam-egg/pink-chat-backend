@@ -13,9 +13,12 @@ export default async function userMustHaveLoggedIn(req, res, next) {
     const accessToken = authHeader.replace(bearerPrefix, "");
     let decoded;
     try {
-        if (DEBUG) console.log("ACCESS TOKEN:", accessToken);
         decoded = jwt.verify(accessToken, process.env.JWT_ACCESS_SECRET);
     } catch (error) {
+        if (DEBUG) {
+            console.log("MALFORMED ACCESS TOKEN:", accessToken);
+            console.log("AUTHORIZATION HEADER:", authHeader);
+        }
         throw new HttpException(400, "Malformed access token");
     }
 

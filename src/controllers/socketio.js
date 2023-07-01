@@ -1,6 +1,7 @@
 import userMustHaveLoggedIn from "../middleware/userMustHaveLoggedIn";
 import CAS from "../exceptions/catchAsyncForSocketio";
 import HttpException from "../exceptions/HttpException";
+import { DEBUG } from "../env";
 
 const socketIdAndUserIdMap = {};
 const socketIdAndSocketMap = {};
@@ -32,18 +33,17 @@ function getUserIdBySocketId(socketId) {
     return socketIdAndUserIdMap[String(socketId)];
 }
 
-function forEachReceiverSocketIdAndUserId(group, func) {
+function forEachOnlineReceiverSocketIdAndUserId(group, func) {
     for (let memberInfo of group.users) {
         const receiverUserId = String(memberInfo.userId);
-        const receiverSocketId = String(getSocketIdByUserId(receiverUserId));
+        const receiverSocketId = getSocketIdByUserId(receiverUserId);
+        if (!receiverSocketId) continue; // receiver offline
         func(receiverSocketId, memberInfo.userId, memberInfo.isAdmin);
     }
 }
 
 export async function notifyNewMessage(senderUser, group, message) {
-    forEachReceiverSocketIdAndUserId(group, (receiverSocketId) => {
-        if (!receiverSocketId) return; // receiver offline
-    
+    forEachOnlineReceiverSocketIdAndUserId(group, (receiverSocketId) => {
         const receiverSocket = getSocketBySocketId(receiverSocketId);
         receiverSocket.emit("new-message", {
             groupId: group._id,
@@ -53,9 +53,7 @@ export async function notifyNewMessage(senderUser, group, message) {
 }
 
 export async function notifyEditMessage(senderUser, group, message) {
-    forEachReceiverSocketIdAndUserId(group, (receiverSocketId) => {
-        if (!receiverSocketId) return; // receiver offline
-    
+    forEachOnlineReceiverSocketIdAndUserId(group, (receiverSocketId) => {
         const receiverSocket = getSocketBySocketId(receiverSocketId);
         receiverSocket.emit("edit-message", {
             groupId: group._id,
@@ -65,9 +63,7 @@ export async function notifyEditMessage(senderUser, group, message) {
 }
 
 export async function notifyDeleteMessage(senderUser, group, messageId) {
-    forEachReceiverSocketIdAndUserId(group, (receiverSocketId) => {
-        if (!receiverSocketId) return; // receiver offline
-
+    forEachOnlineReceiverSocketIdAndUserId(group, (receiverSocketId) => {
         const receiverSocket = getSocketBySocketId(receiverSocketId);
         receiverSocket.emit("delete-message", {
             groupId: group._id,
@@ -84,9 +80,7 @@ export async function notifyDeleteMessage(senderUser, group, messageId) {
 //     return userId;
 // }
 
-export function handleSocketioConnection(_socket) {
-    const socket = _socket; // closure
-
+export function handleSocketioConnection(socket) {
     socket.on("authenticate", CAS(socket, async (data) => {
         const accessToken = data.accessToken;
         // Fake req instance to use the middleware
@@ -97,8 +91,7 @@ export function handleSocketioConnection(_socket) {
         };
         await userMustHaveLoggedIn(req, null, () => { });
 
-        socketIdAndUserIdMap[String(socket.id)] = String(req.user._id);
-        socketIdAndSocketMap[String(socket.id)] = socket;
+        addSocket(socket, req.user._id);
         socket.emit("authenticate-done");
     }));
 
