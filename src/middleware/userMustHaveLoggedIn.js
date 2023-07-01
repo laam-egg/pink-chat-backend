@@ -10,7 +10,12 @@ export default async function userMustHaveLoggedIn(req, res, next) {
     }
 
     const token = authHeader.replace(bearerPrefix, "");
-    const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+    let decoded;
+    try {
+        decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+    } catch (error) {
+        throw new HttpException(400, "Malformed access token");
+    }
 
     const user = await User.findById(decoded.id);
     if (!user) {
