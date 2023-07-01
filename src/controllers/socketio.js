@@ -76,10 +76,6 @@ export async function notifyDeleteMessage(senderUser, group, messageId) {
     });
 }
 
-function getUserIdBySocketId(socketId) {
-    return socketIdAndUserIdMap[socketId];
-}
-
 // function socketUserMustHaveLoggedIn(socket) {
 //     const userId = getUserIdBySocketId(socket.id);
 //     if (!userId) {
