@@ -1,21 +1,41 @@
 import userMustHaveLoggedIn from "../middleware/userMustHaveLoggedIn";
 import CAS from "../exceptions/catchAsyncForSocketio";
 import HttpException from "../exceptions/HttpException";
-import compareId from "../compareId";
 
 const socketIdAndUserIdMap = {};
 const socketIdAndSocketMap = {};
 
-// This function's purpose is to obtain socketId from known userId in the map above.
-// Modified from: https://stackoverflow.com/a/28191966/13680015
+function addSocket(socket, userId) {
+    userId = String(userId);
+    const socketId = String(socket._id);
+    socketIdAndSocketMap[socketId] = socket;
+    socketIdAndUserIdMap[socketId] = userId;
+}
+
+function removeSocketById(socketId) {
+    socketId = String(socketId);
+    delete socketIdAndSocketMap[socketId];
+    delete socketIdAndUserIdMap[socketId];
+}
+
 function getSocketIdByUserId(userId) {
-    return Object.keys(socketIdAndUserIdMap).find(socketId => compareId(socketIdAndUserIdMap[socketId], userId));
+    // Modified from: https://stackoverflow.com/a/28191966/13680015
+    userId = String(userId);
+    return Object.keys(socketIdAndUserIdMap).find(socketId => getUserIdBySocketId(socketId) === userId);
+}
+
+function getSocketBySocketId(socketId) {
+    return socketIdAndSocketMap[String(socketId)];
+}
+
+function getUserIdBySocketId(socketId) {
+    return socketIdAndUserIdMap[String(socketId)];
 }
 
 function forEachReceiverSocketIdAndUserId(group, func) {
     for (let memberInfo of group.users) {
-        const receiverUserId = memberInfo.userId;
-        const receiverSocketId = getSocketIdByUserId(receiverUserId);
+        const receiverUserId = String(memberInfo.userId);
+        const receiverSocketId = String(getSocketIdByUserId(receiverUserId));
         func(receiverSocketId, memberInfo.userId, memberInfo.isAdmin);
     }
 }
@@ -24,7 +44,7 @@ export async function notifyNewMessage(senderUser, group, message) {
     forEachReceiverSocketIdAndUserId(group, (receiverSocketId) => {
         if (!receiverSocketId) return; // receiver offline
     
-        const receiverSocket = socketIdAndSocketMap[receiverSocketId];
+        const receiverSocket = getSocketBySocketId(receiverSocketId);
         receiverSocket.emit("new-message", {
             groupId: group._id,
             message
@@ -36,7 +56,7 @@ export async function notifyEditMessage(senderUser, group, message) {
     forEachReceiverSocketIdAndUserId(group, (receiverSocketId) => {
         if (!receiverSocketId) return; // receiver offline
     
-        const receiverSocket = socketIdAndSocketMap[receiverSocketId];
+        const receiverSocket = getSocketBySocketId(receiverSocketId);
         receiverSocket.emit("edit-message", {
             groupId: group._id,
             message
@@ -45,10 +65,10 @@ export async function notifyEditMessage(senderUser, group, message) {
 }
 
 export async function notifyDeleteMessage(senderUser, group, messageId) {
-    forEachReceiverSocketIdAndUserId(group, (receiverSocketId, receiverUserId) => {
+    forEachReceiverSocketIdAndUserId(group, (receiverSocketId) => {
         if (!receiverSocketId) return; // receiver offline
 
-        const receiverSocket = socketIdAndSocketMap[receiverSocketId];
+        const receiverSocket = getSocketBySocketId(receiverSocketId);
         receiverSocket.emit("delete-message", {
             groupId: group._id,
             messageId
@@ -93,13 +113,12 @@ export function handleSocketioConnection(_socket) {
             }
         }
 
-        socketIdAndUserIdMap[socket.id] = req.user._id;
-        socketIdAndSocketMap[socket.id] = socket;
+        socketIdAndUserIdMap[String(socket.id)] = String(req.user._id);
+        socketIdAndSocketMap[String(socket.id)] = socket;
         socket.emit("authenticate-done");
     }));
 
     socket.on("disconnect", CAS(socket, async (data) => {
-        delete socketIdAndUserIdMap[socket.id];
-        delete socketIdAndSocketMap[socket.id];
+        removeSocketById(socket.id);
     }));
 }

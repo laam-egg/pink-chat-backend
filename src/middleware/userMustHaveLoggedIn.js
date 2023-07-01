@@ -1,6 +1,7 @@
 import User from "../models/User";
 import jwt from "jsonwebtoken";
 import HttpException from "../exceptions/HttpException";
+import { DEBUG } from "../env";
 
 export default async function userMustHaveLoggedIn(req, res, next) {
     const authHeader = req.headers.authorization;
@@ -9,10 +10,11 @@ export default async function userMustHaveLoggedIn(req, res, next) {
         throw new HttpException(401, "Access denied. User not logged in");
     }
 
-    const token = authHeader.replace(bearerPrefix, "");
+    const accessToken = authHeader.replace(bearerPrefix, "");
     let decoded;
     try {
-        decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+        if (DEBUG) console.log("ACCESS TOKEN:", accessToken);
+        decoded = jwt.verify(accessToken, process.env.JWT_ACCESS_SECRET);
     } catch (error) {
         throw new HttpException(400, "Malformed access token");
     }
