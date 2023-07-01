@@ -20,7 +20,7 @@ function forEachReceiverSocketIdAndUserId(group, func) {
 }
 
 export async function notifyNewMessage(senderUser, group, message) {
-    forEachReceiverSocketIdAndUserId((receiverSocketId) => {
+    forEachReceiverSocketIdAndUserId(group, (receiverSocketId) => {
         if (!receiverSocketId) return; // receiver offline
     
         const receiverSocket = socketIdAndSocketMap[receiverSocketId];
@@ -32,7 +32,7 @@ export async function notifyNewMessage(senderUser, group, message) {
 }
 
 export async function notifyEditMessage(senderUser, group, message) {
-    forEachReceiverSocketIdAndUserId((receiverSocketId) => {
+    forEachReceiverSocketIdAndUserId(group, (receiverSocketId) => {
         if (!receiverSocketId) return; // receiver offline
     
         const receiverSocket = socketIdAndSocketMap[receiverSocketId];
@@ -44,7 +44,7 @@ export async function notifyEditMessage(senderUser, group, message) {
 }
 
 export async function notifyDeleteMessage(senderUser, group, messageId) {
-    forEachReceiverSocketIdAndUserId((receiverSocketId, receiverUserId) => {
+    forEachReceiverSocketIdAndUserId(group, (receiverSocketId, receiverUserId) => {
         if (!receiverSocketId) return; // receiver offline
 
         const receiverSocket = socketIdAndSocketMap[receiverSocketId];
