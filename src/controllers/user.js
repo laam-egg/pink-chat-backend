@@ -8,7 +8,7 @@ async function hash(password) {
     return await bcrypt.hash(password, 10);
 }
 
-export async function listUsers(req, res) {
+export async function listAllUsers(req, res) {
     const { fullNameContains } = req.body;
     const filter = {};
     $textSearch("fullName", fullNameContains, filter);

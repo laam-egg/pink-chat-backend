@@ -2,10 +2,32 @@ import HttpException from "../exceptions/HttpException";
 import Group from "../models/Group";
 import Message from "../models/Message";
 import compareId from "../compareId";
+import $textSearch from "../helpers/$textSearch";
 
-export async function listGroups(req, res) {
+export async function listAllGroups(req, res) {
+    const { nameContains } = req.body;
+    const filter = {};
+    $textSearch("name", nameContains, filter);
+
     const resBody = {
-        list: await Group.find()
+        list: await Group.find(filter)
+    };
+    res.status(200).json(resBody);
+}
+
+export async function listMyGroups(req, res) {
+    const { nameContains } = req.body;
+    const filter = {
+        users: {
+            $elemMatch: {
+                userId: req.user._id
+            }
+        }
+    };
+    $textSearch("name", nameContains, filter);
+
+    const resBody = {
+        list: await Group.find(filter)
     };
     res.status(200).json(resBody);
 }

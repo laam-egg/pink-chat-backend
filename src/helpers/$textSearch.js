@@ -1,7 +1,7 @@
 import escapeStringRegexp from "escape-string-regexp";
 
 export default function $textSearch(fieldName, contains, filter) {
-    if (!contains) contains = "";
+    if (!contains) return;
     const orList = [];
     for (let word of contains.split(" ")) {
         if (!word) continue;

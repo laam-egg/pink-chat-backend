@@ -1,4 +1,4 @@
-import { createGroup, invite, deleteGroup, listGroups, renameGroup } from "../../controllers/group";
+import { createGroup, invite, deleteGroup, listAllGroups, listMyGroups, renameGroup } from "../../controllers/group";
 import { Router } from "express";
 import CA from "../../exceptions/catchAsync";
 
@@ -10,16 +10,16 @@ import userMustBeAdminInGroup from "../../middleware/userMustBeAdminInGroup";
 
 const groupRouter = Router();
 
-groupRouter.use(CA(userMustHaveLoggedIn));
+groupRouter.post("/list_all", CA(listAllGroups));
 
-groupRouter.post("/list", CA(listGroups));
+groupRouter.post("/list", CA(userMustHaveLoggedIn), CA(listMyGroups));
 
-groupRouter.post("/create", CA(createGroup));
+groupRouter.post("/create", CA(userMustHaveLoggedIn), CA(createGroup));
 
-groupRouter.post("/invite", CA(groupMustExist), CA(userMustBeAdminInGroup), CA(invite));
+groupRouter.post("/invite", CA(userMustHaveLoggedIn), CA(groupMustExist), CA(userMustBeAdminInGroup), CA(invite));
 
-groupRouter.patch("/rename", CA(groupMustExist), CA(userMustBeInGroup), CA(renameGroup));
+groupRouter.patch("/rename", CA(userMustHaveLoggedIn), CA(groupMustExist), CA(userMustBeInGroup), CA(renameGroup));
 
-groupRouter.delete("/delete", CA(groupMustExist), CA(userMustBeInGroup), CA(deleteGroup));
+groupRouter.delete("/delete", CA(userMustHaveLoggedIn), CA(groupMustExist), CA(userMustBeInGroup), CA(deleteGroup));
 
 export default groupRouter;

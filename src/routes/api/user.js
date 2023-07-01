@@ -1,11 +1,11 @@
 import { Router } from "express";
 import CA from "../../exceptions/catchAsync.js";
-import { getSelfUserInfo, getAnotherUserInfo, listUsers, createUser, editUser, forgotPassword, deleteUser } from "../../controllers/user.js";
+import { getSelfUserInfo, getAnotherUserInfo, listAllUsers, createUser, editUser, forgotPassword, deleteUser } from "../../controllers/user.js";
 import userMustHaveLoggedIn from "../../middleware/userMustHaveLoggedIn.js";
 
 const userRouter = Router();
 
-userRouter.post("/list", CA(listUsers));
+userRouter.post("/list_all", CA(listAllUsers));
 
 userRouter.get("/info", CA(userMustHaveLoggedIn), CA(getSelfUserInfo));
 
