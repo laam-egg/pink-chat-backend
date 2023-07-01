@@ -69,7 +69,7 @@ function getUserIdBySocketId(socketId) {
 export function handleSocketioConnection(_socket) {
     const socket = _socket; // closure
 
-    socket.on("authenticate", CAS(async (data) => {
+    socket.on("authenticate", CAS(socket, async (data) => {
         const accessToken = data.accessToken;
         // Fake req instance to use the middleware
         const req = {
@@ -96,7 +96,7 @@ export function handleSocketioConnection(_socket) {
         socket.emit("authenticate-done");
     }));
 
-    socket.on("disconnect", CAS(async (data) => {
+    socket.on("disconnect", CAS(socket, async (data) => {
         delete socketIdAndUserIdMap[socket.id];
         delete socketIdAndSocketMap[socket.id];
     }));

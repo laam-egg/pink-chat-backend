@@ -1,6 +1,5 @@
 import Message from "../models/Message";
 import { notifyNewMessage, notifyEditMessage, notifyDeleteMessage } from "./socketio";
-import CAS from "../exceptions/catchAsyncForSocketio";
 
 export async function listMessages(req, res) {
     const { pagination, datetimeBefore } = req.body;
@@ -35,7 +34,7 @@ export async function sendMessage(req, res) {
 
     res.status(200).json(message);
 
-    CAS(notifyNewMessage(req.user, req.group, message));
+    await notifyNewMessage(req.user, req.group, message);
 }
 
 export async function editMessage(req, res) {
@@ -60,12 +59,12 @@ export async function editMessage(req, res) {
     );
     res.status(200).json(message);
 
-    CAS(notifyEditMessage(req.user, req.group, message));
+    await notifyEditMessage(req.user, req.group, message);
 }
 
 export async function deleteMessage(req, res) {
     const messageId = req.message._id;
     await Message.findByIdAndDelete(messageId);
     res.status(200).json({});
-    CAS(notifyDeleteMessage(req.user, req.group, messageId));
+    await notifyDeleteMessage(req.user, req.group, messageId);
 }
