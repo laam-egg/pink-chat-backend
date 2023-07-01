@@ -99,19 +99,7 @@ export function handleSocketioConnection(_socket) {
                 authorization: `Bearer ${accessToken}`
             }
         };
-        try {
-            await userMustHaveLoggedIn(req, null, () => { });
-        } catch (error) {
-            if (error instanceof HttpException) {
-                socket.emit("error", {
-                    status: error.getStatusCode(),
-                    message: error.message
-                });
-                return;
-            } else {
-                throw error;
-            }
-        }
+        await userMustHaveLoggedIn(req, null, () => { });
 
         socketIdAndUserIdMap[String(socket.id)] = String(req.user._id);
         socketIdAndSocketMap[String(socket.id)] = socket;
