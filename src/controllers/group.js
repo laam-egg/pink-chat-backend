@@ -39,6 +39,54 @@ export async function createGroup(req, res) {
     res.status(200).json(newGroup);
 }
 
+export async function invite(req, res) {
+    const { inviteeUserId, isInviteeGonnaBeAdmin } = req.body;
+
+    const result = {
+        already: false
+    };
+
+    for (let memberInfo of req.group.users) {
+        if (compareId(inviteeUserId, memberInfo.userId)) {
+            result.already = true;
+            // Invitee already in group. Check admin status.
+            if (isInviteeGonnaBeAdmin !== undefined && Boolean(isInviteeGonnaBeAdmin) !== Boolean(memberInfo.isAdmin)) {
+                result.isAdmin = Boolean(isInviteeGonnaBeAdmin);
+                await Group.updateOne(
+                    { _id: req.group._id, "users.userId": inviteeUserId },
+                    {
+                        $set: {
+                            "users.$.isAdmin": result.isAdmin
+                        }
+                    }
+                );
+                result.isAdminChanged = true;
+            } else {
+                result.isAdmin = memberInfo.isAdmin || false;
+                result.isAdminChanged = false;
+            }
+        }
+    }
+
+    if (!result.already) {
+        result.isAdmin = isInviteeGonnaBeAdmin !== undefined ? isInviteeGonnaBeAdmin : false;
+        await Group.findByIdAndUpdate(
+            req.group._id,
+            {
+                $push: {
+                    users: {
+                        userId: inviteeUserId,
+                        isAdmin: result.isAdmin
+                    }
+                }
+            }
+        );
+        result.isAdminChanged = true;
+    }
+
+    res.status(200).json(result);
+}
+
 export async function renameGroup(req, res) {
     const { name } = req.body;
 
