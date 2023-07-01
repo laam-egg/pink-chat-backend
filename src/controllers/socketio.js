@@ -1,20 +1,21 @@
 import userMustHaveLoggedIn from "../middleware/userMustHaveLoggedIn";
 import CAS from "../exceptions/catchAsyncForSocketio";
 import HttpException from "../exceptions/HttpException";
+import compareId from "../compareId";
 
 const socketIdAndUserIdMap = {};
 const socketIdAndSocketMap = {};
 
 // This function's purpose is to obtain socketId from known userId in the map above.
-// Source: https://stackoverflow.com/a/28191966/13680015
-function getKeyByValue(object, value) {
-    return Object.keys(object).find(key => object[key] === value);
+// Modified from: https://stackoverflow.com/a/28191966/13680015
+function getSocketIdByUserId(userId) {
+    return Object.keys(socketIdAndUserIdMap).find(socketId => compareId(socketIdAndUserIdMap[socketId], userId));
 }
 
 function forEachReceiverSocketIdAndUserId(group, func) {
     for (let memberInfo of group.users) {
         const receiverUserId = memberInfo.userId;
-        const receiverSocketId = getKeyByValue(socketIdAndUserIdMap, receiverUserId);
+        const receiverSocketId = getSocketIdByUserId(receiverUserId);
         func(receiverSocketId, memberInfo.userId, memberInfo.isAdmin);
     }
 }
