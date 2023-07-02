@@ -11,6 +11,6 @@ export default function $textSearch(fieldName, contains, filter) {
         };
         orList.push(q);
     };
-    if (!orList) return;
+    if (orList.length === 0) return;
     filter.$or = orList.concat(filter.$or ? filter.$or : []);
 }

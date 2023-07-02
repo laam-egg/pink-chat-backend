@@ -82,6 +82,10 @@ export async function notifyDeleteMessage(senderUser, group, messageId) {
 //     return userId;
 // }
 
+export function isUserAlreadyConnected(userId) {
+    return getSocketIdByUserId(userId) !== undefined;
+}
+
 export function handleSocketioConnection(socket) {
     socket.on("authenticate", CAS(socket, async (data) => {
         const accessToken = data.accessToken;

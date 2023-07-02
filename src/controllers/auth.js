@@ -3,6 +3,8 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import User from "../models/User.js";
 
+import { isUserAlreadyConnected } from "./socketio.js";
+
 import { DEBUG } from "../env.js";
 
 /**
@@ -48,10 +50,18 @@ export async function login(req, res) {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
-    if (!user) throw new HttpException(404, "No user with such email address");
+    if (!user) {
+        throw new HttpException(404, "No user with such email address");
+    }
 
     const isMatch = await bcrypt.compare(password, user.passwordHash);
-    if (!isMatch) throw new HttpException(401, "Incorrect password");
+    if (!isMatch) {
+        throw new HttpException(401, "Incorrect password");
+    }
+
+    if (isUserAlreadyConnected(user._id)) {
+        throw new HttpException(403, "User already logged in on another device");
+    }
 
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);

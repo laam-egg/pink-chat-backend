@@ -79,6 +79,17 @@ socket.on("new-message", CA("getting new message", async (data) => {
     messagesTextArea.value += await formatMessage(message);
 }));
 
+function afterAppendingMessages() {
+    const messagesTextArea = document.getElementById("messages-textarea");
+    // https://stackoverflow.com/a/10158291/13680015
+    with (messagesTextArea) {
+        focus();
+        setSelectionRange(value.length, value.length);
+    }
+    const messageInput = document.getElementById("message-input");
+    messageInput.focus();
+}
+
 axios.defaults.headers = {
     "Content-Type": "application/json",
     "Authorization": `Bearer ${accessToken}`
@@ -142,6 +153,7 @@ const onGroupSelectChange = CA("changing group", async() => {
             return formatMessage(message);
         }))
     ).join("");
+    afterAppendingMessages();
 
     currentGroupId = groupId;
 });
@@ -163,6 +175,7 @@ const sendMessage = CA("sending message", async() => {
     const messagesTextArea = document.getElementById("messages-textarea");
     messagesTextArea.value += await formatMessage(message);
     messageInput.value = "";
+    afterAppendingMessages();
 });
 
     </script>

@@ -156,7 +156,7 @@ export async function removeMemberFromGroup(req, res) {
 export async function leaveGroup(req, res) {
     const result = { groupRemoved: false };
     const group = await removeMemberFromGroupInternal_(req, req.user._id);
-    if (!group.users) {
+    if (group.users.length === 0) {
         // No members left, immediately dispose of the group
         await deleteGroupInternal_(req);
         result.groupRemoved = true;
