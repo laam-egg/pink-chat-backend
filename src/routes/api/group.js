@@ -1,4 +1,4 @@
-import { createGroup, getGroupInfo, invite, deleteGroup, listAllGroups, listMyGroups, renameGroup } from "../../controllers/group";
+import { createGroup, getGroupInfo, invite, deleteGroup, listAllGroups, listMyGroups, renameGroup, removeMemberFromGroup } from "../../controllers/group";
 import { Router } from "express";
 import CA from "../../exceptions/catchAsync";
 
@@ -7,6 +7,8 @@ import groupMustExist from "../../middleware/groupMustExist";
 import userMustHaveLoggedIn from "../../middleware/userMustHaveLoggedIn";
 import userMustBeInGroup from "../../middleware/userMustBeInGroup";
 import userMustBeAdminInGroup from "../../middleware/userMustBeAdminInGroup";
+import groupMemberMustExist from "../../middleware/groupMemberMustExist";
+import groupMemberMustNotBeAdmin from "../../middleware/groupMemberMustNotBeAdmin";
 
 const groupRouter = Router();
 
@@ -29,6 +31,8 @@ groupRouter.get("/info/:id",
 groupRouter.post("/create", CA(userMustHaveLoggedIn), CA(createGroup));
 
 groupRouter.patch("/invite", CA(userMustHaveLoggedIn), CA(groupMustExist), CA(userMustBeAdminInGroup), CA(invite));
+
+groupRouter.patch("/remove_member", CA(userMustHaveLoggedIn), CA(groupMustExist), CA(userMustBeAdminInGroup), CA(groupMemberMustExist), CA(groupMemberMustNotBeAdmin), CA(removeMemberFromGroup));
 
 groupRouter.patch("/rename", CA(userMustHaveLoggedIn), CA(groupMustExist), CA(userMustBeInGroup), CA(renameGroup));
 

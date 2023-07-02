@@ -3,6 +3,7 @@ import Group from "../models/Group";
 import Message from "../models/Message";
 import compareId from "../compareId";
 import $textSearch from "../helpers/$textSearch";
+import locateMemberInGroup from "../helpers/locateMemberInGroup";
 
 export async function listAllGroups(req, res) {
     const { nameContains } = req.body;
@@ -68,33 +69,29 @@ export async function createGroup(req, res) {
 export async function invite(req, res) {
     const { inviteeUserId, isInviteeGonnaBeAdmin } = req.body;
 
-    const result = {
-        already: false
-    };
+    const result = {};
 
-    for (let memberInfo of req.group.users) {
-        if (compareId(inviteeUserId, memberInfo.userId)) {
-            result.already = true;
-            // Invitee already in group. Check admin status.
-            if (isInviteeGonnaBeAdmin !== undefined && Boolean(isInviteeGonnaBeAdmin) !== Boolean(memberInfo.isAdmin)) {
-                result.isAdmin = Boolean(isInviteeGonnaBeAdmin);
-                await Group.updateOne(
-                    { _id: req.group._id, "users.userId": inviteeUserId },
-                    {
-                        $set: {
-                            "users.$.isAdmin": result.isAdmin
-                        }
+    const memberInfo = locateMemberInGroup(req.group, inviteeUserId);
+    if (memberInfo) {
+        result.already = true;
+        // Invitee already in group. Check admin status.
+        if (isInviteeGonnaBeAdmin !== undefined && Boolean(isInviteeGonnaBeAdmin) !== Boolean(memberInfo.isAdmin)) {
+            result.isAdmin = Boolean(isInviteeGonnaBeAdmin);
+            await Group.updateOne(
+                { _id: req.group._id, "users.userId": inviteeUserId },
+                {
+                    $set: {
+                        "users.$.isAdmin": result.isAdmin
                     }
-                );
-                result.isAdminChanged = true;
-            } else {
-                result.isAdmin = memberInfo.isAdmin || false;
-                result.isAdminChanged = false;
-            }
+                }
+            );
+            result.isAdminChanged = true;
+        } else {
+            result.isAdmin = memberInfo.isAdmin || false;
+            result.isAdminChanged = false;
         }
-    }
-
-    if (!result.already) {
+    } else {
+        result.already = false;
         result.isAdmin = isInviteeGonnaBeAdmin !== undefined ? isInviteeGonnaBeAdmin : false;
         await Group.findByIdAndUpdate(
             req.group._id,
@@ -111,6 +108,21 @@ export async function invite(req, res) {
     }
 
     res.status(200).json(result);
+}
+
+export async function removeMemberFromGroup(req, res) {
+    const resBody = await Group.findByIdAndUpdate(
+        req.group._id,
+        {
+            $pull: {
+                users: {
+                    userId: req.memberInfo.userId
+                }
+            }
+        },
+        { new: true }
+    );
+    res.status(200).json(resBody);
 }
 
 export async function renameGroup(req, res) {
