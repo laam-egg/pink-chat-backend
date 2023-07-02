@@ -1,13 +1,33 @@
 import Message from "../models/Message";
 import { notifyNewMessage, notifyEditMessage, notifyDeleteMessage } from "./socketio";
+import $textSearch from "../helpers/$textSearch";
 
-export async function listMessages(req, res) {
-    const { pagination, datetimeBefore } = req.body;
+import groupMustExist from "../middleware/groupMustExist";
+import userMustBeInGroup from "../middleware/userMustBeInGroup";
 
-    let query = Message.find({
-        groupId: req.group._id,
-        datetime: { $lt: (datetimeBefore ? new Date(datetimeBefore) : Date.now()) }
-    }).sort("-date");
+async function listMessagesInternal_(req, res, includeMessagesSentByOthers = false) {
+    const { groupId, textContains, pagination, datetimeBefore } = req.body;
+    const filter = {};
+
+    if (!includeMessagesSentByOthers) {
+        filter.senderUserId = req.user._id
+    }
+
+    if (groupId) {
+        await groupMustExist(req, res, () => 1);
+        await userMustBeInGroup(req, res, () => 1);
+        filter.groupId = req.group._id;
+    }
+
+    if (textContains) {
+        $textSearch("text", textContains, filter);
+    }
+
+    filter.datetime = {
+        $lt: (datetimeBefore ? new Date(datetimeBefore) : Date.now())
+    };
+
+    let query = Message.find(filter).sort("-date");
 
     if (pagination) query = query.limit(pagination);
 
@@ -16,6 +36,14 @@ export async function listMessages(req, res) {
     };
 
     res.status(200).json(resBody);
+}
+
+export async function listMyMessages(req, res) {
+    return await listMessagesInternal_(req, res, false);
+}
+
+export async function listAllMessages(req, res) {
+    return await listMessagesInternal_(req, res, true);
 }
 
 export async function sendMessage(req, res) {

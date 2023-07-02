@@ -5,18 +5,20 @@ import groupMustExist from "../../middleware/groupMustExist";
 import userMustBeInGroup from "../../middleware/userMustBeInGroup";
 import userMustHaveSentMessage from "../../middleware/userMustHaveSentMessage";
 import validateMessageBody from "../../middleware/validateMessageBody";
-import { listMessages, sendMessage, editMessage, deleteMessage } from "../../controllers/message";
+import { listMyMessages, listAllMessages, sendMessage, editMessage, deleteMessage } from "../../controllers/message";
 
 const messageRouter = Router();
 
-messageRouter.use(CA(userMustHaveLoggedIn), CA(groupMustExist), CA(userMustBeInGroup));
+messageRouter.use(CA(userMustHaveLoggedIn));
 
-messageRouter.post("/list", CA(listMessages));
+messageRouter.post("/list", CA(listMyMessages));
 
-messageRouter.post("/send", CA(validateMessageBody), CA(sendMessage));
+messageRouter.post("/list_all", CA(listAllMessages));
 
-messageRouter.patch("/edit", CA(userMustHaveSentMessage), CA(validateMessageBody), CA(editMessage));
+messageRouter.post("/send", CA(groupMustExist), CA(userMustBeInGroup), CA(validateMessageBody), CA(sendMessage));
 
-messageRouter.delete("/delete", CA(userMustHaveSentMessage), CA(deleteMessage));
+messageRouter.patch("/edit", CA(groupMustExist), CA(userMustBeInGroup), CA(userMustHaveSentMessage), CA(validateMessageBody), CA(editMessage));
+
+messageRouter.delete("/delete", CA(groupMustExist), CA(userMustBeInGroup), CA(userMustHaveSentMessage), CA(deleteMessage));
 
 export default messageRouter;
