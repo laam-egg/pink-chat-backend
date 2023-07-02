@@ -94,13 +94,19 @@ export async function editUser(req, res) {
 export async function forgotPassword(req, res) {
     const { email } = req.body;
 
-    const user = User.findOne({ email });
+    const user = await User.findOne({ email });
     if (!user) {
         throw new HttpException(404, "User not found");
     }
 
     const newPassword = "abc@123";
-    user.passwordHash = hash(newPassword);
+
+    await User.findByIdAndUpdate(
+        user._id,
+        {
+            passwordHash: await hash(newPassword)
+        } //, { new: true }
+    );
 
     res.status(200).json({
         newPassword
