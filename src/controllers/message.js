@@ -27,7 +27,7 @@ async function listMessagesInternal_(req, res, includeMessagesSentByOthers = fal
         $lt: (datetimeBefore ? new Date(datetimeBefore) : Date.now())
     };
 
-    let query = Message.find(filter).sort("-date");
+    let query = Message.find(filter).sort("-datetime");
 
     if (pagination) query = query.limit(pagination);
 
