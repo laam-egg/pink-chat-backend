@@ -28,7 +28,7 @@ groupRouter.get("/info/:id",
 
 groupRouter.post("/create", CA(userMustHaveLoggedIn), CA(createGroup));
 
-groupRouter.post("/invite", CA(userMustHaveLoggedIn), CA(groupMustExist), CA(userMustBeAdminInGroup), CA(invite));
+groupRouter.patch("/invite", CA(userMustHaveLoggedIn), CA(groupMustExist), CA(userMustBeAdminInGroup), CA(invite));
 
 groupRouter.patch("/rename", CA(userMustHaveLoggedIn), CA(groupMustExist), CA(userMustBeInGroup), CA(renameGroup));
 
