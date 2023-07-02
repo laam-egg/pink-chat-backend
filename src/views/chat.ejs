@@ -160,7 +160,8 @@ const onGroupSelectChange = CA("changing group", async() => {
 
 const formatMessage = async (message) => {
     const user = await getUserInfo(message.senderUserId);
-    return `${user.fullName} [${message.datetime}]: ${message.text}\n`;
+    const datetime = new Date(message.datetime);
+    return `${user.fullName} [${datetime.getDate()}/${datetime.getMonth()}/${datetime.getFullYear()}-${datetime.getHours()}:${datetime.getMinutes()}:${datetime.getSeconds()}]: ${message.text}\n`;
 };
 
 const sendMessage = CA("sending message", async() => {
