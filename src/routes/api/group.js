@@ -1,4 +1,4 @@
-import { createGroup, getGroupInfo, invite, deleteGroup, listAllGroups, listMyGroups, renameGroup, removeMemberFromGroup } from "../../controllers/group";
+import { createGroup, getGroupInfo, invite, deleteGroup, listAllGroups, listMyGroups, renameGroup, removeMemberFromGroup, leaveGroup } from "../../controllers/group";
 import { Router } from "express";
 import CA from "../../exceptions/catchAsync";
 
@@ -33,6 +33,8 @@ groupRouter.post("/create", CA(userMustHaveLoggedIn), CA(createGroup));
 groupRouter.patch("/invite", CA(userMustHaveLoggedIn), CA(groupMustExist), CA(userMustBeAdminInGroup), CA(invite));
 
 groupRouter.patch("/remove_member", CA(userMustHaveLoggedIn), CA(groupMustExist), CA(userMustBeAdminInGroup), CA(groupMemberMustExist), CA(groupMemberMustNotBeAdmin), CA(removeMemberFromGroup));
+
+groupRouter.patch("/leave", CA(userMustHaveLoggedIn), CA(groupMustExist), CA(userMustBeInGroup), CA(leaveGroup));
 
 groupRouter.patch("/rename", CA(userMustHaveLoggedIn), CA(groupMustExist), CA(userMustBeInGroup), CA(renameGroup));
 

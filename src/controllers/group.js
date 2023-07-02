@@ -111,21 +111,6 @@ export async function invite(req, res) {
     res.status(200).json(result);
 }
 
-export async function removeMemberFromGroup(req, res) {
-    const resBody = await Group.findByIdAndUpdate(
-        req.group._id,
-        {
-            $pull: {
-                users: {
-                    userId: req.memberInfo.userId
-                }
-            }
-        },
-        { new: true }
-    );
-    res.status(200).json(resBody);
-}
-
 export async function renameGroup(req, res) {
     const { name } = req.body;
 
@@ -142,15 +127,49 @@ export async function renameGroup(req, res) {
     }
 
     const group = await Group.findByIdAndUpdate(
-        { _id: req.group.id },
+        req.group._id,
         updates,
         { new: true }
     );
     res.status(200).json(group);
 }
 
-export async function deleteGroup(req, res) {
+async function removeMemberFromGroupInternal_(req, memberUserId) {
+    return await Group.findByIdAndUpdate(
+        req.group._id,
+        {
+            $pull: {
+                users: {
+                    userId: memberUserId
+                }
+            }
+        },
+        { new: true }
+    );
+}
+
+export async function removeMemberFromGroup(req, res) {
+    const group = await removeMemberFromGroupInternal_(req, req.memberInfo.userId);
+    res.status(200).json(group);
+}
+
+export async function leaveGroup(req, res) {
+    const result = { groupRemoved: false };
+    const group = await removeMemberFromGroupInternal_(req, req.user._id);
+    if (!group.users) {
+        // No members left, immediately dispose of the group
+        await deleteGroupInternal_(req);
+        result.groupRemoved = true;
+    }
+    res.status(200).json(result);
+}
+
+async function deleteGroupInternal_(req) {
     await Group.findByIdAndRemove(req.group._id);
     await Message.deleteMany({ groupId: req.group._id });
+}
+
+export async function deleteGroup(req, res) {
+    await deleteGroupInternal_(req);
     res.status(200).json({});
 }
