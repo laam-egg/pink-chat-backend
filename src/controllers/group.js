@@ -1,7 +1,7 @@
 import HttpException from "../exceptions/HttpException";
 import Group from "../models/Group";
 import Message from "../models/Message";
-import compareId from "../compareId";
+import compareId from "../helpers/compareId";
 import $textSearch from "../helpers/$textSearch";
 import locateMemberInGroup from "../helpers/locateMemberInGroup";
 

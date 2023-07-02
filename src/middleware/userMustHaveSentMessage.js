@@ -1,6 +1,6 @@
 import HttpException from "../exceptions/HttpException";
 import Message from "../models/Message";
-import compareId from "../compareId";
+import compareId from "../helpers/compareId";
 
 export default async function userMustHaveSentMessage(req, res, next) {
     const { messageId } = req.body;

@@ -1,4 +1,4 @@
-import compareId from "../compareId";
+import compareId from "../helpers/compareId";
 
 export default function locateMemberInGroup(group, memberUserId) {
     for (let memberInfo of group.users) {

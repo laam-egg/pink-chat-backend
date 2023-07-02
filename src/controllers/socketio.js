@@ -38,7 +38,7 @@ function forEachOnlineReceiverSocketIdAndUserId(group, func) {
         const receiverUserId = String(memberInfo.userId);
         const receiverSocketId = getSocketIdByUserId(receiverUserId);
         if (!receiverSocketId) continue; // receiver offline
-        func(receiverSocketId, memberInfo.userId, memberInfo.isAdmin);
+        func(receiverSocketId, receiverUserId, memberInfo.isAdmin);
     }
 }
 
