@@ -32,6 +32,6 @@ groupRouter.post("/invite", CA(userMustHaveLoggedIn), CA(groupMustExist), CA(use
 
 groupRouter.patch("/rename", CA(userMustHaveLoggedIn), CA(groupMustExist), CA(userMustBeInGroup), CA(renameGroup));
 
-groupRouter.delete("/delete", CA(userMustHaveLoggedIn), CA(groupMustExist), CA(userMustBeInGroup), CA(deleteGroup));
+groupRouter.delete("/delete", CA(userMustHaveLoggedIn), CA(groupMustExist), CA(userMustBeAdminInGroup), CA(deleteGroup));
 
 export default groupRouter;
