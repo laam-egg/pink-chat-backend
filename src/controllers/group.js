@@ -74,22 +74,24 @@ export async function invite(req, res) {
     const memberInfo = locateMemberInGroup(req.group, inviteeUserId);
     if (memberInfo) {
         result.already = true;
-        // Invitee already in group. Check admin status.
-        if (isInviteeGonnaBeAdmin !== undefined && Boolean(isInviteeGonnaBeAdmin) !== Boolean(memberInfo.isAdmin)) {
-            result.isAdmin = Boolean(isInviteeGonnaBeAdmin);
-            await Group.updateOne(
-                { _id: req.group._id, "users.userId": inviteeUserId },
-                {
-                    $set: {
-                        "users.$.isAdmin": result.isAdmin
-                    }
-                }
-            );
-            result.isAdminChanged = true;
-        } else {
-            result.isAdmin = memberInfo.isAdmin || false;
-            result.isAdminChanged = false;
-        }
+        result.isAdmin = memberInfo.isAdmin;
+        // Invitee already in group.
+        // Check admin status (CURRENTLY: DON'T DO THIS).
+        // if (isInviteeGonnaBeAdmin !== undefined && Boolean(isInviteeGonnaBeAdmin) !== Boolean(memberInfo.isAdmin)) {
+        //     result.isAdmin = Boolean(isInviteeGonnaBeAdmin);
+        //     await Group.updateOne(
+        //         { _id: req.group._id, "users.userId": inviteeUserId },
+        //         {
+        //             $set: {
+        //                 "users.$.isAdmin": result.isAdmin
+        //             }
+        //         }
+        //     );
+        //     result.isAdminChanged = true;
+        // } else {
+        //     result.isAdmin = memberInfo.isAdmin || false;
+        //     result.isAdminChanged = false;
+        // }
     } else {
         result.already = false;
         result.isAdmin = isInviteeGonnaBeAdmin !== undefined ? isInviteeGonnaBeAdmin : false;
@@ -104,7 +106,6 @@ export async function invite(req, res) {
                 }
             }
         );
-        result.isAdminChanged = true;
     }
 
     res.status(200).json(result);
