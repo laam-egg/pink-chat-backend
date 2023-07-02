@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat</title>
+</head>
+<body>
+    <h1 id="fullName-header"></h1><br>
+
+    <textarea id="messages-textarea" readonly></textarea><br>
+
+    <label for="group-select">Select group:</label>
+    <select id="group-select" onchange="onGroupSelectChange()">
+        <option value="0">Unselected</option>
+    </select><br>
+
+    <input type="text" id="message-input">
+    <button onclick="sendMessage()">Send</button>
+    <script>
+        (function() {
+            document.getElementById("message-input")
+            .addEventListener("keypress", function (event) {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    sendMessage();
+                }
+            })
+        })();
+    </script>
+
+
+
+
+    <%- include("setup_env"); %>
+    
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/socket.io@4.7.1/client-dist/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.5/dist/js.cookie.min.js"></script>
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js" integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+" crossorigin="anonymous"></script>
+    
+
+
+    <script>
+const accessToken = Cookies.get("accessToken");
+let currentGroupId;
+
+if (!accessToken) {
+    window.location.replace("/login");
+}
+
+const errorCatcher = (working) => (error) => {
+    console.log(`While ${working}: ERROR: ${error}`);
+    console.log("DETAILS:", error);
+}
+
+/// catch-async
+const CA = (working, func) => (...args) => {
+    func(...args).catch(errorCatcher(working));
+}
+
+const socket = io(`ws://${API_HOST}:${SOCKET_PORT}`);
+socket.emit("authenticate", { accessToken });
+
+socket.on("authenticate-done", (data) => {
+    console.log("Socket authenticated.");
+});
+
+socket.on("error", (data) => {
+    console.log("Socket error:", error);
+});
+
+socket.on("new-message", CA("getting new message", async (data) => {
+    const { groupId, message } = data;
+    if (groupId != currentGroupId) {
+        return; // TODO
+    }
+    const messagesTextArea = document.getElementById("messages-textarea");
+    messagesTextArea.value += await formatMessage(message);
+}));
+
+axios.defaults.headers = {
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${accessToken}`
+};
+axios.defaults.baseURL = "/api/v1";
+
+/// get user info quickly
+const cachedUsers = {};
+async function getUserInfo(userId, refresh = false) {
+    userId = String(userId);
+    let user;
+    if (!refresh) {
+        user = cachedUsers[userId];
+        if (!user) refresh = true;
+    }
+    if (refresh) {
+        const res = await axios.get(`/user/info/${userId}`);
+        user = cachedUsers[userId] = res.data;
+    }
+    return user;
+}
+
+axios.get("/user/info")
+.then((res) => {
+    const fullNameHeader = document.getElementById("fullName-header");
+    fullNameHeader.innerHTML = `Your Full Name: ${res.data.fullName}`;
+})
+.catch(errorCatcher("getting user info"));
+
+axios.post("/group/list")
+.then(CA("displaying groups", async (res) => {
+    const groupSelect = document.getElementById("group-select");
+    for (const group of res.data.list) {
+        let name = group.name;
+        if (!name) {
+            const groupMembersFullNames = await Promise.all(group.users.map(async (memberInfo) => {
+                const user = await getUserInfo(memberInfo.userId);
+                return user.fullName;
+            }));
+            name = groupMembersFullNames.join(" ; ");
+        }
+        const id = group._id;
+        const opt = document.createElement("option");
+        opt.value = id;
+        opt.innerHTML = name;
+        groupSelect.appendChild(opt);
+    }
+}))
+.catch(errorCatcher("querying groups"));
+
+const onGroupSelectChange = CA("changing group", async() => {
+    const messagesTextArea = document.getElementById("messages-textarea");
+    
+    const groupSelect = document.getElementById("group-select");
+    const groupId = groupSelect.value;
+
+    const res = await axios.post("/message/list_all", { groupId });
+
+    messagesTextArea.value = (
+        await Promise.all(res.data.list.reverse().map(async (message) => {
+            return formatMessage(message);
+        }))
+    ).join("");
+
+    currentGroupId = groupId;
+});
+
+const formatMessage = async (message) => {
+    const user = await getUserInfo(message.senderUserId);
+    return `${user.fullName} [${message.datetime}]: ${message.text}\n`;
+};
+
+const sendMessage = CA("sending message", async() => {
+    const messageInput = document.getElementById("message-input");
+    const messageText = messageInput.value;
+    const payload = {
+        groupId: currentGroupId,
+        text: messageText
+    };
+    const res = await axios.post("/message/send", payload);
+    const message = res.data;
+    const messagesTextArea = document.getElementById("messages-textarea");
+    messagesTextArea.value += await formatMessage(message);
+    messageInput.value = "";
+});
+
+    </script>
+</body>
+</html>

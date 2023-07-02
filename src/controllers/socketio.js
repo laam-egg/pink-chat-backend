@@ -1,6 +1,7 @@
 import userMustHaveLoggedIn from "../middleware/userMustHaveLoggedIn";
 import CAS from "../exceptions/catchAsyncForSocketio";
 import HttpException from "../exceptions/HttpException";
+import compareId from "../helpers/compareId";
 import { DEBUG } from "../env";
 
 const socketIdAndUserIdMap = {};
@@ -8,7 +9,7 @@ const socketIdAndSocketMap = {};
 
 function addSocket(socket, userId) {
     userId = String(userId);
-    const socketId = String(socket._id);
+    const socketId = String(socket.id);
     socketIdAndSocketMap[socketId] = socket;
     socketIdAndUserIdMap[socketId] = userId;
 }
@@ -33,9 +34,10 @@ function getUserIdBySocketId(socketId) {
     return socketIdAndUserIdMap[String(socketId)];
 }
 
-function forEachOnlineReceiverSocketIdAndUserId(group, func) {
+function forEachOnlineReceiverSocketIdAndUserId(senderUser, group, func) {
     for (let memberInfo of group.users) {
         const receiverUserId = String(memberInfo.userId);
+        if (compareId(receiverUserId, senderUser._id)) continue; // do not notify sender
         const receiverSocketId = getSocketIdByUserId(receiverUserId);
         if (!receiverSocketId) continue; // receiver offline
         func(receiverSocketId, receiverUserId, memberInfo.isAdmin);
@@ -43,7 +45,7 @@ function forEachOnlineReceiverSocketIdAndUserId(group, func) {
 }
 
 export async function notifyNewMessage(senderUser, group, message) {
-    forEachOnlineReceiverSocketIdAndUserId(group, (receiverSocketId) => {
+    forEachOnlineReceiverSocketIdAndUserId(senderUser, group, (receiverSocketId) => {
         const receiverSocket = getSocketBySocketId(receiverSocketId);
         receiverSocket.emit("new-message", {
             groupId: group._id,
@@ -53,7 +55,7 @@ export async function notifyNewMessage(senderUser, group, message) {
 }
 
 export async function notifyEditMessage(senderUser, group, message) {
-    forEachOnlineReceiverSocketIdAndUserId(group, (receiverSocketId) => {
+    forEachOnlineReceiverSocketIdAndUserId(senderUser, group, (receiverSocketId) => {
         const receiverSocket = getSocketBySocketId(receiverSocketId);
         receiverSocket.emit("edit-message", {
             groupId: group._id,
@@ -63,7 +65,7 @@ export async function notifyEditMessage(senderUser, group, message) {
 }
 
 export async function notifyDeleteMessage(senderUser, group, messageId) {
-    forEachOnlineReceiverSocketIdAndUserId(group, (receiverSocketId) => {
+    forEachOnlineReceiverSocketIdAndUserId(senderUser, group, (receiverSocketId) => {
         const receiverSocket = getSocketBySocketId(receiverSocketId);
         receiverSocket.emit("delete-message", {
             groupId: group._id,

@@ -22,9 +22,12 @@
 
     <%- include("setup_env"); %>
     
-    <script defer src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/socket.io@4.7.1/client-dist/socket.io.min.js"></script>
-    <script defer src="/assets/chat.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/socket.io@4.7.1/client-dist/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.5/dist/js.cookie.min.js"></script>
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js" integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+" crossorigin="anonymous"></script>
+
     <script>
         let loggingIn = false;
 
@@ -50,7 +53,8 @@
             }).then((response) => {
                 alert("You have logged in !");
                 const accessToken = response.data.accessToken;
-                chat(accessToken);
+                Cookies.set("accessToken", accessToken);
+                window.location.replace("/chat");
             }).catch((error) => {
                 alert("Error: " + error);
                 console.log(error.response.data.message);
