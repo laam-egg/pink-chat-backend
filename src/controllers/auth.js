@@ -69,7 +69,7 @@ export async function login(req, res) {
 
     res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
-        secure: true,
+        secure: false, // if true, HTTPS only
         path: "/"
     });
 
