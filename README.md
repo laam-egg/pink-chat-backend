@@ -42,4 +42,4 @@ You can just develop the frontend utilizing this backend. Documentation for API 
 
 ## License
 Copyright (c) 2023 Vu Tung Lam et. al.
-This project may only be distributed under the terms of the **3-clause BSD License**. Refre to the file `LICENSE.md`.
+This project may only be distributed under the terms of the **3-clause BSD License**. Refer to the file `LICENSE.md`.
