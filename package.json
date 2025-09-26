@@ -5,7 +5,7 @@
   "main": "./src/server.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon --experimental-specifier-resolution=node --exec babel-node ./src/server.js",
+    "dev": "tsx watch src/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -30,6 +30,7 @@
     "@babel/node": "^7.22.5",
     "@babel/preset-env": "^7.22.5",
     "babel-node": "0.0.1-security",
-    "nodemon": "^2.0.22"
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.2"
   }
 }

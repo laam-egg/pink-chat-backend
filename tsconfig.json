@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": false,          // 👈 skip type checking JS
+    "skipLibCheck": true,      // 👈 skip .d.ts checks
+    "noEmitOnError": false,    // 👈 emit even if errors
+    "outDir": "dist",
+    "module": "esnext",
+    "target": "es2020",
+    "moduleResolution": "node"   // 👈 restores index.js fallback
+  },
+  "include": ["src/**/*"]
+}
